@@ -393,7 +393,7 @@ Module Constr.
     | _, _ => false
     end).
 
-  Ltac2 compare_sort (s : sort) (s' : sort) := 
+  Ltac2 compare_sort (s : sort) (s' : sort) :=
     let is_prop := Constr.equal (Unsafe.make (Unsafe.Sort s)) 'Prop in
     let is_prop' := Constr.equal (Unsafe.make (Unsafe.Sort s')) 'Prop in
     let is_sprop := Constr.equal (Unsafe.make (Unsafe.Sort s)) 'SProp in
@@ -408,7 +408,7 @@ Module Constr.
     | Unsafe.Meta m1, Unsafe.Meta m2 => Meta.equal m1 m2
     | Unsafe.Evar e1 l1, Unsafe.Evar e2 l2 =>
         Evar.equal e1 e2 && Array.equal equal_nocumul l1 l2
-    | Unsafe.Sort s , Unsafe.Sort s' => compare_sort s s' 
+    | Unsafe.Sort s , Unsafe.Sort s' => compare_sort s s'
     | Unsafe.Cast c1' _ t1, Unsafe.Cast c2' _ t2 =>
         equal_nocumul c1' c2' && equal_nocumul t1 t2
     | Unsafe.Prod b1 t1, Unsafe.Prod b2 t2 =>
@@ -2700,7 +2700,7 @@ Ltac2 beta_red_flags : Std.red_flags := {
   Std.rConst := []
 }.
 
-Ltac2 check_appvect (t : constr) (args: constr array) : constr result := 
+Ltac2 check_appvect (t : constr) (args: constr array) : constr result :=
   Constr.Unsafe.check  (Constr.Unsafe.make (Constr.Unsafe.App t args)).
 
 (** Reduce a term to head normal form, stripping casts. *)
@@ -2758,7 +2758,7 @@ Ltac2 first_failing_arg (t : constr) (args : constr list) : (int*constr) option 
               (* Types agree: build the application and continue.
                  We also instantiate [body] with [a] so that
                  dependent types are handled correctly. *)
-              match check_appvect acc [| a |]  with 
+              match check_appvect acc [| a |]  with
                 | Val t => go t tl
                 | _ => None
               end
@@ -2844,7 +2844,7 @@ Abort.
 
 Ltac2 mutable compute_triple (_:constr) (_:ident) (_:ident) : unit := ().
 
-From Ltac2 Require Import Constr. 
+From Ltac2 Require Import Constr.
 
 Ltac2 merge_triple_array (a:constr array) (b : (ident * ident) array) : constr list :=
   let l1 := Array.to_list a in
@@ -2867,7 +2867,7 @@ Ltac2 forward_apply (lem:constr) (t:constr) :=
     in
     let fresh_ident := Array.init n (fun _ => mk ()) in
     let () := Array.iter2 (fun arg id => let (id1, id2) := id in compute_triple arg id1 id2) c_args fresh_ident in
-    match check_appvect lem (Array.of_list (merge_triple_array c_args fresh_ident)) with 
+    match check_appvect lem (Array.of_list (merge_triple_array c_args fresh_ident)) with
     | Val apply_lem => unshelve (refine $apply_lem)
     | _ => Control.zero Match_failure
     end.
@@ -2880,8 +2880,8 @@ Ltac2 mutable shelve_and_tc () := ().
 
 Ltac2 tc_hint_for (fatal : bool) (warn : bool) (key : constr) (lem : constr) (goal_lhs : constr) :=
   intros;
-  let tac () := first 
-            [unshelve (eapply $lem); shelve_and_tc ()| 
+  let tac () := first
+            [unshelve (eapply $lem); shelve_and_tc ()|
              pre_tc_hint_hook (); unshelve (eapply $lem); shelve_and_tc () |
              forward_apply lem goal_lhs |
              pre_tc_hint_hook () ; forward_apply lem goal_lhs|
@@ -2898,7 +2898,7 @@ Ltac2 tc_hint_for (fatal : bool) (warn : bool) (key : constr) (lem : constr) (go
   else
   match check_appvect key goal_args with
     | Val key_app =>
-      let key_app := beta_red key_app in 
+      let key_app := beta_red key_app in
       if Constr.equal_nounivs goal_lhs key_app then
         if fatal then
          tac ()
