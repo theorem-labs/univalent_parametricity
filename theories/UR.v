@@ -52,7 +52,6 @@ Ltac2 shelve_non_PR () :=
   | [ |- PR _ _ _ ] => ()
   | [ |- UR_Type _ _ ] => ()
   | [ |- pr _ _ _ ] => ()
-  | [ |- parametricity_kind ] => exact univalent
   | [ |- _ ] => Control.shelve ()
   end.
 
